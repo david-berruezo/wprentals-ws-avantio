@@ -86,8 +86,11 @@ function load_plugin() {
     }// end if
 }// end function
 
+
+
 # create register custom post type
 add_action('setup_theme', 'create_all',20);
+
 
 function create_all(){
     global $post_and_taxonomies;
