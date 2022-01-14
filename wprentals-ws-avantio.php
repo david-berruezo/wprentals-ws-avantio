@@ -89,7 +89,7 @@ function load_plugin() {
 
 
 # create register custom post type
-add_action('setup_theme', 'create_all',20);
+//add_action('setup_theme', 'create_all',20);
 
 
 function create_all(){
