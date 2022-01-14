@@ -9,10 +9,45 @@
 class InsertDeleteTermsTaxonomies
 {
 
+    # avantio credential
+    private $avantio_credential = "local_wordpress";
+
+    # db
+    private $db = "";
+
+
     public function __construct()
     {
         // construct
     } // end function
+
+
+    public function connectDb()
+    {
+        $connector = new DB();
+        $connector->setCredential($this->getAvantioCredential());
+        $this->db = $connector::getInstance();
+    }
+
+
+
+    /**
+     * @return string
+     */
+    public function getAvantioCredential(): string
+    {
+        return $this->avantio_credential;
+    }
+
+
+    /**
+     * @param string $avantio_credential
+     */
+    public function setAvantioCredential(string $avantio_credential): void
+    {
+        $this->avantio_credential = $avantio_credential;
+    }
+
 
 
     function insert_all(){
@@ -21,16 +56,17 @@ class InsertDeleteTermsTaxonomies
         $this->insert_kind();
         $this->insert_kindAlquiler();
         $this->insert_status();
-        $this->insert_taxononomy_property_swimming_pool();
-        $this->insert_term_taxonomy_multilanguage();
-        // insert_services();
+        //$this->insert_taxononomy_property_swimming_pool();
+        //$this->insert_term_taxonomy_multilanguage();
+        $this->insert_services();
+
     } // end function
 
 
     function insert_features(){
 
         # db
-        $connector = new Database();
+        $connector = new DB();
         $connector->setCredential("automocion");
         $db = $connector::getInstance();
 
@@ -45,32 +81,6 @@ class InsertDeleteTermsTaxonomies
         # feature
         $feature = new Feature();
         $feature->createFeatures($avantio_credentials);
-    }
-
-
-    function insert_services(){
-
-        global $avantio_credential;
-
-        # db
-        $connector = new Database();
-        $db = $connector::getInstance();
-
-        # language
-        # active languanges
-        $language = new Language();
-        $language->setDb($db);
-        $avantio_credentials = array(
-            'ACTIVED_LANGUAGES' => $language->getAll(),
-        );
-
-        # service
-        $service = new Service();
-        $service->setAvantioCredential($avantio_credential);
-        $service->connectDb();
-        $service->insertServices($avantio_credentials);
-
-
     }
 
 
@@ -157,6 +167,30 @@ class InsertDeleteTermsTaxonomies
         # kind
         $status = new Status();
         $status->insertStatus($avantio_credentials);
+
+    }
+
+
+    function insert_services(){
+
+        # db of avantio
+        global $avantio_credential , $db;
+
+        # language
+        # active languanges
+        $language = new Language();
+        $language->setDb($db);
+        $avantio_credentials = array(
+            'ACTIVED_LANGUAGES' => $language->getAll(),
+        );
+
+        # service
+        # credential and database
+        $service = new Service();
+        $service->setAvantioCredential($avantio_credential);
+        $service->connectDb();
+        # insert
+        $service->insertServices($avantio_credentials);
 
     }
 
@@ -317,6 +351,98 @@ class InsertDeleteTermsTaxonomies
         pll_save_term_translations($term_final_vector);
 
     } // end function
+
+
+    # delete functions
+
+    function delete_all(){
+
+        # delete all posts of custom post type
+        $this->delete_all_posts_of_custom_type();
+        # delete all taxonomies
+        $this->delete_all_taxonomies();
+        # delete terms
+        $this->delete_terms_of_taxonomies();
+        # delete options
+        $this->delete_all_options_taxonomies();
+    }
+
+    # delete all post types
+    function delete_all_posts_of_custom_type(){
+        $this->delete_posts_by_post_type("estate_property");
+    }
+
+
+    function delete_posts_by_post_type($post_type){
+        $args = array(
+            'post_type' => $post_type
+        );
+        $posts = get_posts($args);
+        $ids = array_column($posts,"ID");
+        clean_object_term_cache( $ids, $post_type );
+        foreach ($posts as $post) {
+            $delete = wp_delete_post($post->ID,true);
+        } // end foreach
+    }
+
+
+    # delete taxonomies
+    function delete_all_taxonomies(){
+        $this->delete_taxonomy( 'property_category');
+        $this->delete_taxonomy( 'property_action_category');
+        $this->delete_taxonomy( 'property_city');
+        $this->delete_taxonomy( 'property_area');
+        $this->delete_taxonomy( 'property_features');
+        $this->delete_taxonomy( 'property_status');
+        //$this->delete_taxonomy( 'property_service_piscina');
+        $this->delete_taxonomy( 'extra_services');
+    }
+
+    function delete_taxonomy($taxonomy){
+        unregister_taxonomy( $taxonomy);
+    }
+
+    # delete terms of taxonomies
+    function delete_terms_of_taxonomies(){
+        $this->delete_all_terms( 'property_category');
+        $this->delete_all_terms( 'property_action_category');
+        $this->delete_all_terms( 'property_city');
+        $this->delete_all_terms( 'property_area');
+        $this->delete_all_terms( 'property_features');
+        $this->delete_all_terms( 'property_status');
+        $this->delete_all_terms( 'extra_services');
+        //delete_all_terms( 'property_service_piscina');
+
+    }
+
+    function delete_all_terms($taxonomy_name){
+        $terms = get_terms( array(
+            'taxonomy' => $taxonomy_name,
+            'hide_empty' => false
+        ));
+        foreach ( $terms as $term ) {
+            wp_delete_term($term->term_id, $taxonomy_name);
+        }
+    }
+
+    # delete options taxonomies
+    function delete_all_options_taxonomies(){
+        $this->delete_option_by_taxonomy("taxonomy");
+        $this->delete_option_by_taxonomy("locality");
+        $this->delete_option_by_taxonomy("city");
+        $this->delete_option_by_taxonomy("region");
+        $this->delete_option_by_taxonomy("service");
+    }// end function
+
+
+    function delete_option_by_taxonomy($string_taxonomy){
+
+        $sql = 'delete from wp_options where option_name like "$string_taxonomy%" ';
+        $response = $this->db->query($sql);
+
+        return $response;
+
+    }
 
 
 

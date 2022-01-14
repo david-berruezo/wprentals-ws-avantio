@@ -2,11 +2,11 @@
 
 /**
  * Plugin Name: WpRentals - Avantio Api Websites Core Functionality
- * Plugin URI: http://www.davidberruezo.com/
+ * Plugin URI: https://www.davidberruezo.com/
  * Description: This plugin connect with Avantio Api Websites Webservice
  * Author: David Berruezo
  * Version: 1.0
- * Author URI: http://www.davidberruezo.com/
+ * Author URI: https://www.davidberruezo.com/
  * License:     GPL2
  * Text Domain: wprentals-ws-avantio
  * Domain Path: /languages
@@ -98,70 +98,39 @@ function create_all(){
     $post_and_taxonomies->create_taxonomy_property_extra_services();
 }// end function
 
-# install terms of taxonomies
-add_action('setup_theme', 'insert_all',20);
 
+# install terms of taxonomies
+// add_action('setup_theme', 'insert_all',20);
 function insert_all(){
-    /*
-    insert_features();
-    insert_geolocations();
-    insert_kind();
-    insert_kindAlquiler();
-    insert_status();
-    insert_taxononomy_property_swimming_pool();
-    insert_term_taxonomy_multilanguage();
-    */
-    //insert_services();
+    global $insert_delete_terms_and_taxonomies;
+    # wordpress database , connect database local function
+    $avantio_credential = "local_wordpress";
+    $insert_delete_terms_and_taxonomies->setAvantioCredential($avantio_credential);
+    $insert_delete_terms_and_taxonomies->connectDb();
+    # insert terms of taxonomies
+    $insert_delete_terms_and_taxonomies->insert_all();
 }
 
 # delete terms of taxonomies
-add_action('setup_theme', 'delete_all',20);
+//add_action('setup_theme', 'delete_all',20);
 
+
+# delete terms of taxonomies
+//add_action('setup_theme', 'delete_all',20);
 
 function delete_all(){
-
-    # delete posts and terms
-    //delete_posts_by_custom_post_type();
-    //delete_terms_of_taxonomies();
-
-    # delete post type and taxonomies
-    //delete_custom_post_type_estate();
-    //delete_taxonomies();
-}
-
-function delete_terms_of_taxonomies(){
-    /*
-    delete_all_terms( 'property_category');
-    delete_all_terms( 'property_action_category');
-    delete_all_terms( 'property_city');
-    delete_all_terms( 'property_area');
-    delete_all_terms( 'property_features');
-    delete_all_terms( 'property_status');
-    delete_all_terms( 'property_service_piscina');
-    */
-    //delete_all_terms( 'extra_services');
+    global $insert_delete_terms_and_taxonomies;
+    $insert_delete_terms_and_taxonomies->delete_all();
 }
 
 
-function delete_all_terms($taxonomy_name){
-    $terms = get_terms( array(
-        'taxonomy' => $taxonomy_name,
-        'hide_empty' => false
-    ));
-    foreach ( $terms as $term ) {
-        wp_delete_term($term->term_id, $taxonomy_name);
-    }
-}
-
-# delete terms of taxonomies
-add_action('setup_theme', 'call_to_avantio',20);
 
 function call_to_avantio(){
     $avantio = new Avantio();
 }
 
 
-
+/*
 function insert_features(){
 
     # db
@@ -188,7 +157,7 @@ function insert_services(){
     global $avantio_credential;
 
     # db
-    $connector = new Database();
+    $connector = new DB();
     $db = $connector::getInstance();
 
     # language
@@ -412,16 +381,6 @@ function insert_taxononomy_property_swimming_pool($avantio_credentials)
 
     //p_($vector_plantilla);
 
-    /*
-    Array
-    (
-        [ca] => 3005
-[en] => 3007
-[es] => 3009
-[fr] => 3011
-)
-*/
-
 } // end function
 
 
@@ -452,6 +411,7 @@ function insert_term_taxonomy_multilanguage($taxonomy , $terms)
     pll_save_term_translations($term_final_vector);
 
 } // end function
+*/
 
 
 # cronjob
@@ -498,6 +458,8 @@ register_activation_hook(__FILE__, 'wprentals_ws_avantio_plugin_activation');
 register_deactivation_hook(__FILE__, 'wprentals_ws_avantio_plugin_deactivation');
 
 add_action( 'wprentals_ws_avantio_hook', 'cron_creamos_post' );
+add_action( 'wprentals_ws_avantio_hook', 'delete_all' );
+
 
 /* This function is executed when the user deactivates the plugin */
 function wprentals_ws_avantio_plugin_activation()
