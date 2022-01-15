@@ -7,17 +7,28 @@ class Language
     private $db = "";
 
 
+    public function __construct()
+    {
+        // empty constructor
+    }
+
+
     /**
      * @return array|bool
      */
     public function getAll()
     {
-        $sql = "select * from avantio_accomodations";
+        $sql = "select id from avantio_accomodations";
         $registros = $this->db->get_results( $sql, ARRAY_N  );
 
         return ($registros) ?  $registros : false;
 
     } // end function
+
+    function separar_comas($vector){
+        $langs = implode("," , $vector);
+        return $langs;
+    }
 
 
     /**

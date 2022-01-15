@@ -15,7 +15,7 @@ class Status{
     private $name = "Nuevo";
 
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
 
 

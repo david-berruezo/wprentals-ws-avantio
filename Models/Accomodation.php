@@ -10,7 +10,7 @@
 class Accomodation
 {
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
     # post_id
     private $post_id;
@@ -109,7 +109,7 @@ class Accomodation
                 # insert
                 if (!get_post_status($id)) {
 
-                    p_($accommodation);
+                    // p_($accommodation);
 
                     $counter_language = 0;
 
@@ -119,8 +119,10 @@ class Accomodation
                         $id_language = $id . "-" . $counter_language;
 
                         if ($lang == "es") {
+                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id);
                             $post = $this->create_post($id, $text_title, $description = "<p>Sin contenido</p>", "insert");
                         } else {
+                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id);
                             $post = $this->create_post($id_language, $text_title, $description = "<p>Sin contenido</p>", "insert");
                         }// end if
 
@@ -1367,5 +1369,14 @@ from dynamic_geodistrict as geo_district where id = '".$dynamic_geodistrict."' a
 
         return  ($acommodations) ? $acommodations->text_title : false;
     } // end function
+
+
+    private function getTextTitleByIdAcommodationAndLanguage($language,$id)
+    {
+        $sql = " select text_title from avantio_accomodations where id = '".$id."' and language = '".$language."'  ";
+        $acommodations = $this->db->get_row($sql);
+
+        return  ($acommodations) ? $acommodations->text_title : false;
+    }
 
 }

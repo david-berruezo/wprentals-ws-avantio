@@ -6,7 +6,7 @@ class Service{
     private $db = "";
 
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
 
 

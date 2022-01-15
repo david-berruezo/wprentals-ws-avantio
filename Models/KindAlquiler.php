@@ -17,7 +17,7 @@ class KindAlquiler
     private $name = "Alquiler toda la Villa";
 
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
 
     public function __construct()

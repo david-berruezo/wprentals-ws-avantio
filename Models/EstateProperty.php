@@ -13,7 +13,7 @@ class EstateProperty{
     private $avantio_files;
 
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
     // post_id
     private $post_id = 0;

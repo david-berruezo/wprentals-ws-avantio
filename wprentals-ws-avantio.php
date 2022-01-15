@@ -25,13 +25,13 @@ define( 'AVANTIO_DELETE_LIMIT', 100000 );
 # clases utils
 # db
 include( AVANTIO__PLUGIN_DIR . 'Clases/DB.php' );
+# task
+include( AVANTIO__PLUGIN_DIR . 'Clases/Task.php' );
 # taxonomies terms post_type
 include( AVANTIO__PLUGIN_DIR . 'Clases/CreatePostsAndTaxonomies.php' );
 include(AVANTIO__PLUGIN_DIR . 'Clases/InsertDeleteTermsTaxonomies.php');
-
 # avantio controller
 include( AVANTIO__PLUGIN_DIR . 'Controllers/Avantio.php' );
-
 # avantio models
 include( AVANTIO__PLUGIN_DIR . 'Clases/Language.php' );
 include( AVANTIO__PLUGIN_DIR . 'Models/EstateProperty.php' );
@@ -60,6 +60,9 @@ $insert_delete_terms_and_taxonomies = new InsertDeleteTermsTaxonomies();
 
 # primer paso activar delete all , create_all , avantio
 # segundo paso activar create_all
+
+//add_action( 'init', 'load_plugin' );
+//add_action('plugins_loaded', 'load_plugin');
 
 function load_plugin() {
     if(get_option('avantio') != 'initialised'){
@@ -123,14 +126,167 @@ function delete_all(){
     $insert_delete_terms_and_taxonomies->delete_all();
 }
 
-
+# avantio application
+// add_action('setup_theme', 'call_to_avantio',20);
 
 function call_to_avantio(){
     $avantio = new Avantio();
 }
 
 
+# cronjob
+# wget -q http://localhost/wordpress/wp-cron.php?doing_wp_cron
+
+// add_action('setup_theme', 'crear_evento_cron',20);
+
+function crear_evento_cron(){
+
+    echo "activamos plugin<br>";
+    if(!wp_next_scheduled("wprentals_ws_avantio_hook")){
+        wp_schedule_event(current_time('timestamp'), '5seconds', 'wprentals_ws_avantio_hook');
+    }// end if
+    //error_log("Mi evento se ejecutó" . Date("h:i:sa"));
+}
+
+
+
+add_filter( 'cron_schedules', 'crear_intervalo_cron' );
+
+function crear_intervalo_cron( $schedules ) {
+    $schedules_one['everyminute'] = array(
+        'interval'  => 60, // time in seconds
+        'display'   => 'Every Minute'
+    );
+    $schedules['5seconds'] = array(
+        'interval'  => 5, // time in seconds
+        'display'   => "5 segundos"
+    );
+    return $schedules;
+}
+
+function otros_tiempos_cron(){
+    wp_schedule_event(time(), 'everyminute', 'my_hook');
+    wp_schedule_event(time(), 'hourly', 'my_hook');
+    wp_schedule_event( strtotime( '3am tomorrow' ), 'daily', 'wpshout_do_thing' );
+}
+
+
+/* The deactivation hook is executed when the plugin is deactivated */
+register_activation_hook(__FILE__, 'wprentals_ws_avantio_plugin_activation');
+
+/* This function is executed when the user activates the plugin */
+register_deactivation_hook(__FILE__, 'wprentals_ws_avantio_plugin_deactivation');
+
+add_action( 'wprentals_ws_avantio_hook', 'call_to_application_functions' );
+
+function call_to_application_functions(){
+    delete_all();
+    create_all();
+    insert_all();
+    call_to_avantio();
+}
+
+/* This function is executed when the user deactivates the plugin */
+function wprentals_ws_avantio_plugin_activation()
+{
+    echo "activamos plugin<br>";
+    if(!wp_next_scheduled("wprentals_ws_avantio_hook")){
+        wp_schedule_event(current_time('timestamp'), '5seconds', 'wprentals_ws_avantio_hook');
+    }// end if
+
+}// end function
+
+/* We add a function of our own to the my_hook action.add_action('my_hook','my_function');/* This is the function that is executed by the hourly recurring action my_hook */
+function wprentals_ws_avantio_plugin_deactivation()
+{
+    echo "desactivamos plugin<br>";
+    wp_clear_scheduled_hook('wprentals_ws_avantio_hook');
+}
+
+
+// the code of your hourly event
+function cron_creamos_post() {
+    global $counter;
+    $post = array(
+        // Básicos
+        'post_status' => 'publish',
+        'post_title' => "titulo"  . $counter,
+        'post_excerpt' => "excerpt"  . $counter,
+        'post_content' => "contenido" . $counter,
+        //'post_category' => [ array(<category id>, <...>) ]
+        'post_type' => 'post',
+    );
+    wp_insert_post($post);
+    $counter++;
+    // echo "Hola fecha<br>";
+    // put your code here
+    error_log("Mi evento se ejecutó" . Date("h:i:sa"));
+}
+
+
+
+
+/* ******************************************** Descatalogado ************************************ */
+
 /*
+function getAllAvailavility(){
+
+    $args = array(
+        'post_type' => 'estate_property',
+        'numberposts' => -1
+    );
+
+    $posts = get_posts($args);
+    foreach ($posts as $post) {
+        echo "id"  . $post->ID . "<br>";
+    } // end foreach
+
+}// end function
+
+
+function print_date(){
+    //echo "fecha: " . date("Y-m-d",946684800) . "<br>";
+}
+
+function pms_queries(){
+    global $avantioPms;
+    //connect_pms();
+    //query_reservatons();
+    //is_available();
+}
+
+function connect_pms(){
+    global $avantioPms;
+    $avantioPms->setClientsCredentials(null);
+    //$avantioPms->connect("test");
+    $avantioPms->connect("portvillas");
+}
+
+
+function query_reservatons(){
+    global $avantioPms;
+    $avantioPms = new AvantioPms();
+    $fecha_entrada = "2021-01-01";
+    $fecha_salida  = "2022-01-01";
+    $reservations = $avantioPms->get_booking_list($fecha_entrada,$fecha_salida);
+    //p_($reservations);
+}// end function
+
+
+function is_available(){
+    global $avantioPms;
+    $apartment_id = "297527";
+    //$avantio_model->is_available($apartment_id,$info[$apartment_id]['text_userid'] , $info[$apartment_id]['text_company'] , $fecha_in , $fecha_out);
+    //$avantio_model->get_info($apartment_id,'es');
+    //is_available($accommodation_id , $user_id , $company , $fecha_entrada , $fecha_salida , $adult_number)
+}
+
+
+//add_action( 'plugins_loaded', 'load_plugin' );
+//add_action( 'init', 'load_plugin' );
+//add_action('plugins_loaded', 'load_plugin');
+
+
 function insert_features(){
 
     # db
@@ -411,165 +567,9 @@ function insert_term_taxonomy_multilanguage($taxonomy , $terms)
     pll_save_term_translations($term_final_vector);
 
 } // end function
-*/
-
-
-# cronjob
-# wget -q http://localhost/wordpress/wp-cron.php?doing_wp_cron
-
-add_action('setup_theme', 'crear_evento_cron',20);
-
-function crear_evento_cron(){
-
-    echo "activamos plugin<br>";
-    if(!wp_next_scheduled("wprentals_ws_avantio_hook")){
-        wp_schedule_event(current_time('timestamp'), '5seconds', 'wprentals_ws_avantio_hook');
-    }// end if
-    //error_log("Mi evento se ejecutó" . Date("h:i:sa"));
-}
 
 
 
-add_filter( 'cron_schedules', 'crear_intervalo_cron' );
-
-function crear_intervalo_cron( $schedules ) {
-    $schedules_one['everyminute'] = array(
-        'interval'  => 60, // time in seconds
-        'display'   => 'Every Minute'
-    );
-    $schedules['5seconds'] = array(
-        'interval'  => 5, // time in seconds
-        'display'   => "5 segundos"
-    );
-    return $schedules;
-}
-
-function otros_tiempos_cron(){
-    wp_schedule_event(time(), 'everyminute', 'my_hook');
-    wp_schedule_event(time(), 'hourly', 'my_hook');
-    wp_schedule_event( strtotime( '3am tomorrow' ), 'daily', 'wpshout_do_thing' );
-}
-
-
-/* The deactivation hook is executed when the plugin is deactivated */
-register_activation_hook(__FILE__, 'wprentals_ws_avantio_plugin_activation');
-
-/* This function is executed when the user activates the plugin */
-register_deactivation_hook(__FILE__, 'wprentals_ws_avantio_plugin_deactivation');
-
-//add_action( 'wprentals_ws_avantio_hook', 'cron_creamos_post' );
-//add_action( 'wprentals_ws_avantio_hook', 'delete_all' );
-add_action( 'wprentals_ws_avantio_hook', 'call_to_application_functions' );
-
-function call_to_application_functions(){
-    delete_all();
-    create_all();
-    insert_all();
-    call_to_avantio();
-}
-
-/* This function is executed when the user deactivates the plugin */
-function wprentals_ws_avantio_plugin_activation()
-{
-    echo "activamos plugin<br>";
-    if(!wp_next_scheduled("wprentals_ws_avantio_hook")){
-        wp_schedule_event(current_time('timestamp'), '5seconds', 'wprentals_ws_avantio_hook');
-    }// end if
-
-}// end function
-
-/* We add a function of our own to the my_hook action.add_action('my_hook','my_function');/* This is the function that is executed by the hourly recurring action my_hook */
-function wprentals_ws_avantio_plugin_deactivation()
-{
-    echo "desactivamos plugin<br>";
-    wp_clear_scheduled_hook('wprentals_ws_avantio_hook');
-}
-
-
-// the code of your hourly event
-function cron_creamos_post() {
-    global $counter;
-    $post = array(
-        // Básicos
-        'post_status' => 'publish',
-        'post_title' => "titulo"  . $counter,
-        'post_excerpt' => "excerpt"  . $counter,
-        'post_content' => "contenido" . $counter,
-        //'post_category' => [ array(<category id>, <...>) ]
-        'post_type' => 'post',
-    );
-    wp_insert_post($post);
-    $counter++;
-    // echo "Hola fecha<br>";
-    // put your code here
-    error_log("Mi evento se ejecutó" . Date("h:i:sa"));
-}
-
-
-
-
-/* ******************************************** Descatalogado ************************************ */
-
-/*
-function getAllAvailavility(){
-
-    $args = array(
-        'post_type' => 'estate_property',
-        'numberposts' => -1
-    );
-
-    $posts = get_posts($args);
-    foreach ($posts as $post) {
-        echo "id"  . $post->ID . "<br>";
-    } // end foreach
-
-}// end function
-*/
-
-function print_date(){
-    //echo "fecha: " . date("Y-m-d",946684800) . "<br>";
-}
-
-function pms_queries(){
-    global $avantioPms;
-    //connect_pms();
-    //query_reservatons();
-    //is_available();
-}
-
-function connect_pms(){
-    global $avantioPms;
-    $avantioPms->setClientsCredentials(null);
-    //$avantioPms->connect("test");
-    $avantioPms->connect("portvillas");
-}
-
-
-function query_reservatons(){
-    global $avantioPms;
-    $avantioPms = new AvantioPms();
-    $fecha_entrada = "2021-01-01";
-    $fecha_salida  = "2022-01-01";
-    $reservations = $avantioPms->get_booking_list($fecha_entrada,$fecha_salida);
-    //p_($reservations);
-}// end function
-
-
-function is_available(){
-    global $avantioPms;
-    $apartment_id = "297527";
-    //$avantio_model->is_available($apartment_id,$info[$apartment_id]['text_userid'] , $info[$apartment_id]['text_company'] , $fecha_in , $fecha_out);
-    //$avantio_model->get_info($apartment_id,'es');
-    //is_available($accommodation_id , $user_id , $company , $fecha_entrada , $fecha_salida , $adult_number)
-}
-
-
-//add_action( 'plugins_loaded', 'load_plugin' );
-//add_action( 'init', 'load_plugin' );
-//add_action('plugins_loaded', 'load_plugin');
-
-
-/*
 function delete_all(){
 
     # delete posts and terms

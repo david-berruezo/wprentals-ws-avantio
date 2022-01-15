@@ -10,7 +10,7 @@
 class GeographicArea{
 
     # avantio credential
-    private $avantio_credential = "servidor_tiendapisos";
+    private $avantio_credential = "servidor";
 
     private $vector_found = array(
         "Not s",
