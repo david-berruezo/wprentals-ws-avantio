@@ -10,7 +10,7 @@ class InsertDeleteTermsTaxonomies
 {
 
     # avantio credential
-    private $avantio_credential = "local_wordpress";
+    private $avantio_credential = "servidor";
 
     # db
     private $db = "";
@@ -67,7 +67,7 @@ class InsertDeleteTermsTaxonomies
 
         # db
         $connector = new DB();
-        $connector->setCredential("automocion");
+        $connector->setCredential("servidor");
         $db = $connector::getInstance();
 
         # language
@@ -89,7 +89,7 @@ class InsertDeleteTermsTaxonomies
 
         # db
         $connector = new Database();
-        $connector->setCredential("automocion");
+        $connector->setCredential("servidor");
         $db = $connector::getInstance();
 
         # language
@@ -111,7 +111,7 @@ class InsertDeleteTermsTaxonomies
 
         # db
         $connector = new Database();
-        $connector->setCredential("automocion");
+        $connector->setCredential("servidor");
         $db = $connector::getInstance();
 
         # language
@@ -132,7 +132,7 @@ class InsertDeleteTermsTaxonomies
 
         # db
         $connector = new Database();
-        $connector->setCredential("automocion");
+        $connector->setCredential("servidor");
         $db = $connector::getInstance();
 
         # language
@@ -153,7 +153,7 @@ class InsertDeleteTermsTaxonomies
 
         # db
         $connector = new Database();
-        $connector->setCredential("automocion");
+        $connector->setCredential("servidor");
         $db = $connector::getInstance();
 
         # language
