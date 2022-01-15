@@ -53,7 +53,7 @@ include( AVANTIO__PLUGIN_DIR . 'Helpers/funciones_wordpress.php' );
 
 
 # var
-$avantio_credential = "servidor_tiendapisos";
+$avantio_credential = "servidor";
 $post_and_taxonomies = new CreatePostsAndTaxonomies();
 $insert_delete_terms_and_taxonomies = new InsertDeleteTermsTaxonomies();
 
@@ -104,7 +104,7 @@ function create_all(){
 function insert_all(){
     global $insert_delete_terms_and_taxonomies;
     # wordpress database , connect database local function
-    $avantio_credential = "local_wordpress";
+    $avantio_credential = "servidor";
     $insert_delete_terms_and_taxonomies->setAvantioCredential($avantio_credential);
     $insert_delete_terms_and_taxonomies->connectDb();
     # insert terms of taxonomies
@@ -457,9 +457,16 @@ register_activation_hook(__FILE__, 'wprentals_ws_avantio_plugin_activation');
 /* This function is executed when the user activates the plugin */
 register_deactivation_hook(__FILE__, 'wprentals_ws_avantio_plugin_deactivation');
 
-add_action( 'wprentals_ws_avantio_hook', 'cron_creamos_post' );
-add_action( 'wprentals_ws_avantio_hook', 'delete_all' );
+//add_action( 'wprentals_ws_avantio_hook', 'cron_creamos_post' );
+//add_action( 'wprentals_ws_avantio_hook', 'delete_all' );
+add_action( 'wprentals_ws_avantio_hook', 'call_to_application_functions' );
 
+function call_to_application_functions(){
+    delete_all();
+    create_all();
+    insert_all();
+    call_to_avantio();
+}
 
 /* This function is executed when the user deactivates the plugin */
 function wprentals_ws_avantio_plugin_activation()
