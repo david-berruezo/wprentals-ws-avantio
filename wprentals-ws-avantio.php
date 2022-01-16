@@ -25,6 +25,7 @@ define( 'AVANTIO_DELETE_LIMIT', 100000 );
 # clases utils
 # db
 include( AVANTIO__PLUGIN_DIR . 'Clases/DB.php' );
+include( AVANTIO__PLUGIN_DIR . 'Clases/DBLocal.php' );
 # task
 include( AVANTIO__PLUGIN_DIR . 'Clases/Task.php' );
 # taxonomies terms post_type
@@ -106,10 +107,6 @@ function create_all(){
 // add_action('setup_theme', 'insert_all',20);
 function insert_all(){
     global $insert_delete_terms_and_taxonomies;
-    # wordpress database , connect database local function
-    $avantio_credential = "servidor";
-    $insert_delete_terms_and_taxonomies->setAvantioCredential($avantio_credential);
-    $insert_delete_terms_and_taxonomies->connectDb();
     # insert terms of taxonomies
     $insert_delete_terms_and_taxonomies->insert_all();
 }
@@ -123,6 +120,12 @@ function insert_all(){
 
 function delete_all(){
     global $insert_delete_terms_and_taxonomies;
+    # wordpress database , connect database local function
+    $avantio_credential = "servidor";
+    $insert_delete_terms_and_taxonomies->setAvantioCredential($avantio_credential);
+    $insert_delete_terms_and_taxonomies->setAvantioCredentialLocal($avantio_credential);
+    $insert_delete_terms_and_taxonomies->connectDb();
+    # delete taxonomies
     $insert_delete_terms_and_taxonomies->delete_all();
 }
 

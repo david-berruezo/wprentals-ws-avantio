@@ -11,10 +11,11 @@ class InsertDeleteTermsTaxonomies
 
     # avantio credential
     private $avantio_credential = "servidor";
+    private $avantio_credential_local = "servidor";
 
     # db
     private $db = "";
-
+    private $dblocal = "";
 
     public function __construct()
     {
@@ -24,9 +25,15 @@ class InsertDeleteTermsTaxonomies
 
     public function connectDb()
     {
+        # db
         $connector = new DB();
         $connector->setCredential($this->getAvantioCredential());
         $this->db = $connector::getInstance();
+        # dblocal
+        $connector = new DBLocal();
+        $connector->setCredential($this->getAvantioCredentialLocal());
+        $this->dblocal = $connector::getInstance();
+
     }
 
 
@@ -48,7 +55,53 @@ class InsertDeleteTermsTaxonomies
         $this->avantio_credential = $avantio_credential;
     }
 
+    /**
+     * @return string
+     */
+    public function getAvantioCredentialLocal(): string
+    {
+        return $this->avantio_credential_local;
+    }
 
+    /**
+     * @param string $avantio_credential_local
+     */
+    public function setAvantioCredentialLocal(string $avantio_credential_local): void
+    {
+        $this->avantio_credential_local = $avantio_credential_local;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDb(): string
+    {
+        return $this->db;
+    }
+
+    /**
+     * @param string $db
+     */
+    public function setDb(string $db): void
+    {
+        $this->db = $db;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDblocal(): string
+    {
+        return $this->dblocal;
+    }
+
+    /**
+     * @param string $dblocal
+     */
+    public function setDblocal(string $dblocal): void
+    {
+        $this->dblocal = $dblocal;
+    }
 
     function insert_all(){
         $this->insert_features();
@@ -65,15 +118,10 @@ class InsertDeleteTermsTaxonomies
 
     function insert_features(){
 
-        # db
-        $connector = new DB();
-        $connector->setCredential("servidor");
-        $db = $connector::getInstance();
-
         # language
         # active languanges
         $language = new Language();
-        $language->setDb($db);
+        $language->setDb($this->db);
         $avantio_credentials = array(
             'ACTIVED_LANGUAGES' => $language->getAll(),
         );
@@ -86,59 +134,52 @@ class InsertDeleteTermsTaxonomies
 
 
     function insert_geolocations(){
-
-        # db
-        $connector = new Database();
-        $connector->setCredential("servidor");
-        $db = $connector::getInstance();
+        global $avantio_credential;
 
         # language
         # active languanges
         $language = new Language();
-        $language->setDb($db);
+        $language->setDb($this->db);
         $avantio_credentials = array(
             'ACTIVED_LANGUAGES' => $language->getAll(),
         );
 
-        # service
+        # areas db
         $geo = new GeographicArea();
+        $geo->setAvantioCredential($avantio_credential);
+        $geo->setDb($this->db);
+        # areas inserts
         $geo->insertGeographicAreas($avantio_credentials);
 
     }
 
 
     function insert_kind(){
-
-        # db
-        $connector = new Database();
-        $connector->setCredential("servidor");
-        $db = $connector::getInstance();
+        global $avantio_credential;
 
         # language
         # active languanges
         $language = new Language();
-        $language->setDb($db);
+        $language->setDb($this->db);
         $avantio_credentials = array(
             'ACTIVED_LANGUAGES' => $language->getAll(),
         );
 
         # kind
         $kind = new Kind();
+        $kind->setAvantioCredential($avantio_credential);
+        $kind->setDb($this->db);
+        # inserts kinds
         $kind->insertKind($avantio_credentials);
 
     }
 
     function insert_kindAlquiler(){
 
-        # db
-        $connector = new Database();
-        $connector->setCredential("servidor");
-        $db = $connector::getInstance();
-
         # language
         # active languanges
         $language = new Language();
-        $language->setDb($db);
+        $language->setDb($this->db);
         $avantio_credentials = array(
             'ACTIVED_LANGUAGES' => $language->getAll(),
         );
@@ -151,15 +192,10 @@ class InsertDeleteTermsTaxonomies
 
     function insert_status(){
 
-        # db
-        $connector = new Database();
-        $connector->setCredential("servidor");
-        $db = $connector::getInstance();
-
         # language
         # active languanges
         $language = new Language();
-        $language->setDb($db);
+        $language->setDb($this->db);
         $avantio_credentials = array(
             'ACTIVED_LANGUAGES' => $language->getAll(),
         );
@@ -188,7 +224,8 @@ class InsertDeleteTermsTaxonomies
         # credential and database
         $service = new Service();
         $service->setAvantioCredential($avantio_credential);
-        $service->connectDb();
+        $service->setDb($this->db);
+        //$service->connectDb();
         # insert
         $service->insertServices($avantio_credentials);
 
@@ -437,8 +474,14 @@ class InsertDeleteTermsTaxonomies
 
     function delete_option_by_taxonomy($string_taxonomy){
 
-        $sql = 'delete from wp_options where option_name like "$string_taxonomy%" ';
-        $response = $this->db->query($sql);
+        # db
+        $connector = new DB();
+        $connector->setCredential("wordpress_servidor");
+        $db = $connector::getInstance();
+
+        $text = $string_taxonomy . "%";
+        $sql = "delete from wp_options where option_name like '".$text."' ";
+        $response = $db->query($sql);
 
         return $response;
 

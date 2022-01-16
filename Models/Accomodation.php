@@ -104,7 +104,7 @@ class Accomodation
 
             if($counter_property <= 0) {
 
-                p_($accommodation);
+                //p_($accommodation);
 
                 # insert
                 if (!get_post_status($id)) {
