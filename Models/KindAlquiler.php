@@ -206,5 +206,3 @@ class KindAlquiler
 }// end class
 
 ?>
-
-

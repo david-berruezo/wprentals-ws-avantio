@@ -11,8 +11,6 @@ class Feature{
 
     public function createFeatures($avantio_credentials)
     {
-        # connect to database
-        //$wpdb = DB::getInstance();
 
         # term_vector
         $term_vector = array();
@@ -28,13 +26,13 @@ class Feature{
         foreach ($avantio_credentials['ACTIVED_LANGUAGES'] as $lang) {
             $counter_feature_vector_lang = 0;
             $features_titulos = $this->textosFeature($lang);
-            foreach($features_titulos as $feature_titulo){
-                //if($counter_feature_vector_lang < 1){
+            //print_r($features_titulos);
+            //if($counter_feature_vector_lang < 4){
+                foreach($features_titulos as $feature_titulo){
                     $this->insertFeature($feature_titulo , $lang , $feature_vector_lang , $counter_feature_vector_lang);
-                    $counter_feature_vector_lang++;
-                //}
-            }// end foreach
-
+                }// end foreach
+            //}// end if
+            $counter_feature_vector_lang++;
         } // end foreach
 
         //my_print($feature_vector_lang);

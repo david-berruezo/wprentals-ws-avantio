@@ -393,20 +393,38 @@ class InsertDeleteTermsTaxonomies
     # delete functions
 
     function delete_all(){
-
+        # delete thumbnail post type and attachments start blogmedia
+        $this->delete_thumbnail_post_type("estate_property");
+        $this->delete_attachments_starts_blog();
         # delete all posts of custom post type
         $this->delete_all_posts_of_custom_type();
         # delete all taxonomies
-        $this->delete_all_taxonomies();
+        //$this->delete_all_taxonomies();
         # delete terms
         $this->delete_terms_of_taxonomies();
         # delete options
         $this->delete_all_options_taxonomies();
     }
 
+    function delete_thumbnail_post_type($post_type){
+        $sql = " DELETE m FROM wp_postmeta m JOIN wp_posts p ON m.post_id = p.id WHERE p.post_type = '".$post_type."'  AND meta_key = '_thumbnail_id' ";
+        $response = $this->dblocal->query($sql);
+
+        return $response;
+    }
+
+
+    function delete_attachments_starts_blog(){
+        $sql = "delete from wp_posts 
+where post_type = 'attachment' and post_title like 'blogmedia%' ";
+        $response = $this->dblocal->query($sql);
+
+        return $response;
+    }
+
     # delete all post types
     function delete_all_posts_of_custom_type(){
-        $this->delete_posts_by_post_type("estate_property");
+        //$this->delete_posts_by_post_type("estate_property");
     }
 
 
@@ -420,6 +438,20 @@ class InsertDeleteTermsTaxonomies
         foreach ($posts as $post) {
             $delete = wp_delete_post($post->ID,true);
         } // end foreach
+    }
+
+    function delete_posts_by_post_type_sql($post_type){
+
+        $sql = " DELETE FROM wp_posts WHERE post_type = '".$post_type."' ";
+        $response = $this->dblocal->query($sql);
+
+        //$sql = " DELETE FROM wp_postmeta WHERE post_id NOT IN (SELECT id FROM wp_posts) ";
+        //$response = $this->dblocal->query($sql);
+
+        //$sql = " DELETE FROM wp_term_relationships WHERE object_id NOT IN (SELECT id FROM wp_posts) ";
+        //$response = $this->dblocal->query($sql);
+
+        //$this->dblocal
     }
 
 

@@ -77,13 +77,13 @@ class Accomodation
         $post_vector = array();
 
         # counters
-        $counter_property = -1;
+        $counter_property = 0;
         $counter_property_create = 0;
         $id_anterior = 0;
 
         # get accommodations
         $xml =  $this->getAcommodationById($avantio_credentials);
-        //p_($xml);
+        //print_r($xml);
         //die();
         //p_($xml[0]);
         //p_($xml[1]);
@@ -97,17 +97,23 @@ class Accomodation
             $descripcion = (string)$accommodation->text_title;
             $lang = (string)$accommodation->language;
 
+            /*
             if ( $id_anterior != $id ){
                 $id_anterior = $id;
                 $counter_property++;
             }// end if
+            */
 
-            if($counter_property <= 0) {
+            if($counter_property <= 1) {
 
                 //p_($accommodation);
 
                 # insert
-                if (!get_post_status($id)) {
+                if(get_post($id)){
+                //if (!get_post_status($id)) {
+                    
+                    echo "insert<br>";
+                    echo "id: ".$id."<br>";
 
                     // p_($accommodation);
 
@@ -122,7 +128,7 @@ class Accomodation
                             $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id);
                             $post = $this->create_post($id, $text_title, $description = "<p>Sin contenido</p>", "insert");
                         } else {
-                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id);
+                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id_language);
                             $post = $this->create_post($id_language, $text_title, $description = "<p>Sin contenido</p>", "insert");
                         }// end if
 
@@ -148,9 +154,51 @@ class Accomodation
 
                     }// end foreach
 
+
                 # update
                 }else{
+                    echo "update<br>";
+                    echo "id: ".$id."<br>";
 
+                    $counter_language = 0;
+
+                    foreach ($avantio_credentials['ACTIVED_LANGUAGES'] as $lang) {
+
+                        # id languages different es
+                        $id_language = $id . "-" . $counter_language;
+
+                        if ($lang == "es") {
+                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id);
+                            $post = $this->create_post($id, $text_title, $description = "<p>Sin contenido</p>", "insert");
+                        } else {
+                            $text_title = $description = $this->getTextTitleByIdAcommodationAndLanguage($lang , $id_language);
+                            $post = $this->create_post($id_language, $text_title, $description = "<p>Sin contenido</p>", "insert");
+                        }// end if
+
+                        # insert post and save into vector
+                        $post_id = wp_insert_post($post, true);
+                        //my_print($post_id);
+
+                        $post_vector[$lang][$counter_property]["post_id"] = $post_id;
+                        //my_print($post_vector);
+
+                        # save language
+                        pll_set_post_language($post_vector[$lang][$counter_property]["post_id"], $lang);
+
+                        # taxonomy
+                        $taxonomy_name = $this->getTaxonomyById((string)$accommodation->dynamic_taxonomy, $lang);
+                        //echo "taxonomy_name: " . $taxonomy_name . "<br>";
+
+
+                        # caracteristicas
+                        $this->guardar_caracteristicas($taxonomy_name, $post_id, $avantio_credentials, $accommodation, $lang);
+
+                        $counter_language++;
+
+                    }// end foreach
+
+
+                    /*
                     //echo "encontrado post";
 
                     $post_id = $id;
@@ -166,25 +214,29 @@ class Accomodation
                         $this->guardar_caracteristicas($taxonomy_name, $post_id, $avantio_credentials, $accommodation, $lang);
 
                     }
-
+                    */
 
                 } // check if post exist
 
             } // end if counter property
 
+            $counter_property++;
+
         }// end foreach accomoddation
 
 
-        $counter_property = 1;
+        //$counter_property = 1;
 
         for($i = 0; $i < $counter_property; $i++) {
             $vector_plantilla = array();
             for($j = 0; $j < count($avantio_credentials['ACTIVED_LANGUAGES']); $j++) {
                 if($post_vector[$lang][$i]["post_id"]){
                     $lang = $avantio_credentials['ACTIVED_LANGUAGES'][$j];
+                    (!is_array($vector_plantilla[$lang])) ? $vector_plantilla[$lang] = array() : "";
                     $vector_plantilla[$lang] = $post_vector[$lang][$i]["post_id"];
                 }
             }// end for
+            print_r($vector_plantilla);
             # relationship languages between posts
             // pll_save_post_translations(array('en' => $post_id_en, 'es' => $post_id_es));
             //my_print($vector_plantilla);
@@ -1153,7 +1205,7 @@ class Accomodation
     public function connectDb()
     {
 
-        $connector = new Database();
+        $connector = new DB();
         $connector->setCredential($this->getAvantioCredential());
         $this->db = $connector::getInstance();
 

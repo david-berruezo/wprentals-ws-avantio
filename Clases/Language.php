@@ -18,12 +18,13 @@ class Language
      */
     public function getAll()
     {
-        $sql = "select id from avantio_accomodations";
-        $registros = $this->db->get_results( $sql, ARRAY_N  );
+        $sql = "select id from languages";
+        $registros = $this->db->get_col( $sql );
 
         return ($registros) ?  $registros : false;
 
     } // end function
+
 
     function separar_comas($vector){
         $langs = implode("," , $vector);

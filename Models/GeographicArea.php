@@ -616,5 +616,3 @@ class GeographicArea{
 } // end class
 
 ?>
-
-

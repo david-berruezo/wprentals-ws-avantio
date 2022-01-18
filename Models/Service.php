@@ -64,7 +64,7 @@ class Service{
 
         foreach ($xml as $service) {
 
-            if($counter_service <= 10 ){
+            if($counter_service <= 5 ){
 
                 # data
                 $service_code = intval($service->id);
@@ -144,6 +144,7 @@ class Service{
             pll_save_term_translations($vector_plantilla);
             //my_print($vector_plantilla);
         }// end for
+
 
     }// end function
 
@@ -231,9 +232,8 @@ class Service{
     private function getServices($avantio_credentials)
     {
         $languages = implode("','" , $avantio_credentials['ACTIVED_LANGUAGES']);
-
-        $sql = "select * from dynamic_services
-where language IN('".$languages."');";
+        //print_r($languages);
+        $sql = "select * from dynamic_services where language IN('".$languages."') order by id asc";
         $acommodations = $this->db->get_results($sql);
 
         return  ($acommodations) ? $acommodations : false;

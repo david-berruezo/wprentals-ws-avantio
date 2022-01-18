@@ -86,7 +86,7 @@ class Entorno
 
             foreach ($xml as $accommodation) {
     
-                if ($counter_property < 1) {
+                if ($counter_property <= 1) {
     
                     $my_post_translation = pll_get_post_translations($accommodation->avantio_accomodations);
     
@@ -241,7 +241,7 @@ class Entorno
     public function connectDb()
     {
 
-        $connector = new Database();
+        $connector = new DB();
         $connector->setCredential($this->getAvantioCredential());
         $this->db = $connector::getInstance();
 
@@ -371,7 +371,7 @@ class Entorno
 
     private function getLoations()
     {
-        $sql = "select * from hshv_avantio_accomodations_locations order by avantio_accomodations asc;";
+        $sql = " select * from avantio_accomodations_locations order by avantio_accomodations asc order by id asc";
         $acommodations = $this->db->get_results($sql);
 
         return  ($acommodations) ? $acommodations : false;
