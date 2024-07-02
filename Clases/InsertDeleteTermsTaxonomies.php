@@ -396,6 +396,7 @@ class InsertDeleteTermsTaxonomies
         # delete thumbnail post type and attachments start blogmedia
         $this->delete_thumbnail_post_type("estate_property");
         $this->delete_attachments_starts_blog();
+        $this->delete_jpg_files();
         # delete all posts of custom post type
         $this->delete_all_posts_of_custom_type();
         # delete all taxonomies
